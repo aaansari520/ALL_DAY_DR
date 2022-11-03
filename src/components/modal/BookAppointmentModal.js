@@ -5,14 +5,17 @@ import { useNavigate } from "react-router-dom";
 import {
   cancle,
   getCards,
+  getDoctors,
   getPatients,
+  removeDoctor,
   removePateint,
 } from "../../Redux/appointmentSlice";
 
 const BookAppointmentModal = () => {
-  const { showAppoint, bookPatient, got } = useSelector(
+  const { showAppoint, bookPatient, got, doctors } = useSelector(
     (store) => store.appointmentsData
   );
+  console.log("bookPatient", bookPatient);
   const [searchedPatient, setSearchedPatient] = useState(null);
   const [searchedDoctor, setSearchedDoctor] = useState(null);
   const dispatch = useDispatch();
@@ -42,19 +45,20 @@ const BookAppointmentModal = () => {
     return () => clearTimeout(delaySearch);
   }, [searchedPatient]);
 
-  
   useEffect(() => {
     const delaySearch = setTimeout(() => {
       console.log("stop");
       if (firstUpdate.current) {
         firstUpdate.current = false;
       } else {
-        if (searchedDoctor) {
-          dispatch(getPatients(searchedDoctor));
+        if (searchedDoctor , bookPatient) {
+          const patient_id = bookPatient.id;
+          console.log("bookPatient.id", patient_id);
+          dispatch(getDoctors({ searchedDoctor, patient_id }));
         }
       }
       if (!searchedDoctor) {
-        dispatch(removePateint());
+        dispatch(removeDoctor());
       }
     }, 2000);
 
@@ -140,7 +144,7 @@ const BookAppointmentModal = () => {
                   console.log("setSearchedPatient", e);
                 }}
               >
-                {bookPatient?.map((sur) => {
+                {doctors?.map((sur) => {
                   return (
                     <Select.Option value={sur.id} allowClear key={sur.id}>
                       {sur.first_name} {sur.first_name}

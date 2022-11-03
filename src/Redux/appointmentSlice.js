@@ -4,11 +4,13 @@ import customFetch from "../axios/axios";
 import {
   addAppointmentsToLocalStorage,
   addBookPatientsToLocalStorage,
+  addDoctorsToLocalStorage,
   getAppointmentsFromLocalStorage,
   getBookPatientsFromLocalStorage,
   getDoctorsFromLocalStorage,
   getVerifyAuthTokenFromLocalStorage,
   removeBookPatientsFromLocalStorage,
+  removeDoctorsFromLocalStorage,
 } from "../localStorage/LocalStorageData";
 
 const initialState = {
@@ -17,7 +19,7 @@ const initialState = {
   appointments: getAppointmentsFromLocalStorage(),
   getTotal: null,
   bookPatient: getBookPatientsFromLocalStorage(),
-  doctors:getDoctorsFromLocalStorage(),
+  doctors: getDoctorsFromLocalStorage(),
   cardsDetail: null,
   got: false,
 };
@@ -125,19 +127,18 @@ export const getCards = createAsyncThunk(
   }
 );
 
-
 export const getDoctors = createAsyncThunk(
   "user/getDoctors",
-  async (searchedDoc, thunkAPI) => {
-    console.log("getPatients kya milraha hai yaha", searchedDoc);
+  async ({ searchedDoctor, patient_id }, thunkAPI) => {
+    console.log("getPatients kya milraha hai yaha", searchedDoctor);
 
     try {
       const resp = await customFetch({
-        url: "/api/users",
+        url: "/api/priory/patient/appointments/list_for_priory_cs_doctors.json",
         method: "GET",
         params: {
-          role: "patient",
-          search: searchedDoc,
+          search: searchedDoctor,
+          patient_id: patient_id,
         },
         headers: {
           auth_token: getVerifyAuthTokenFromLocalStorage(),
@@ -175,6 +176,11 @@ const appointmentSlice = createSlice({
       state.bookPatient = null;
       state.got = false;
       removeBookPatientsFromLocalStorage();
+    },
+    removeDoctor: (state) => {
+      state.doctors = null;
+      state.got = false;
+      removeDoctorsFromLocalStorage();
     },
   },
   extraReducers: {
@@ -267,10 +273,43 @@ const appointmentSlice = createSlice({
       state.isLoading = false;
       toast.error(payload.message);
     },
+    [getAppointments.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      toast.error(payload.message);
+    },
+    [getDoctors.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [getDoctors.fulfilled]: (state, { payload }) => {
+      console.log("Payload me kya mila", payload);
+      const { pageData, respDataData, respData } = payload;
+      console.log("Payload Destructure", respData);
+      console.log("Response data data", respDataData);
+
+      if (respData.status === 200) {
+        state.show = true;
+        console.log("Appointments Data", payload);
+        console.log("ACtions in getDoctors", respData);
+        // state.userData = respDataData;
+        state.doctors = respDataData;
+        addDoctorsToLocalStorage(state.doctors);
+        state.showAppoint = true;
+        toast.success(`${respData.message}`);
+        state.isLoading = false;
+        state.got = true;
+      } else {
+        toast.error(`${respData.message}`);
+        state.isLoading = false;
+      }
+    },
+    [getDoctors.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      toast.error(payload.message);
+    },
   },
 });
 
-export const { cancle, openModal, removePateint, updateId } =
+export const { cancle, openModal, removePateint, updateId, removeDoctor } =
   appointmentSlice.actions;
 
 export default appointmentSlice.reducer;
