@@ -10,7 +10,7 @@ const AppointmentsTable = () => {
   );
   const dispatch = useDispatch();
   const [page1, setPage] = useState(1);
-  //   const [Loading, setLoading] = useState(false);
+  const [searchedText, setSearchedText] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -26,9 +26,6 @@ const AppointmentsTable = () => {
     {
       title: "ID",
       dataIndex: "id",
-      //   sorter: (record1, record2) => {
-      //     return record1.id > record2.id;
-      //   },
     },
     {
       title: "Date & Time",
@@ -46,7 +43,7 @@ const AppointmentsTable = () => {
       dataIndex: "booked_by",
       render: (text, row) => (
         <a>
-          {text}{" "}
+          {text}
           <p style={{ display: "flex", justifyContent: "center" }}>
             <b
               style={{
@@ -59,6 +56,12 @@ const AppointmentsTable = () => {
           </p>
         </a>
       ),
+      filteredValue: [searchedText],
+      onFilter: (value, record) => {
+        return String(record.booked_by)
+          .toLowerCase()
+          .includes(value.toLowerCase());
+      },
     },
     {
       title: "Patient Detail",
@@ -107,10 +110,10 @@ const AppointmentsTable = () => {
           <Input.Search
             className="Table-input"
             placeholder="Search patients..."
-            // onChange={(e) => {
-            //   const change = e.target.value;
-            //   setSearchedText(change);
-            // }}
+            onChange={(e) => {
+              const change = e.target.value;
+              setSearchedText(change);
+            }}
           ></Input.Search>
         </div>
 

@@ -4,12 +4,15 @@ import customFetch from "../axios/axios";
 import {
   addAppointmentsToLocalStorage,
   addBookPatientsToLocalStorage,
+  addCardsDetailToLocalStorage,
   addDoctorsToLocalStorage,
   getAppointmentsFromLocalStorage,
   getBookPatientsFromLocalStorage,
+  getCardsDetailFromLocalStorage,
   getDoctorsFromLocalStorage,
   getVerifyAuthTokenFromLocalStorage,
   removeBookPatientsFromLocalStorage,
+  removeCardsDetailFromLocalStorage,
   removeDoctorsFromLocalStorage,
 } from "../localStorage/LocalStorageData";
 
@@ -20,7 +23,7 @@ const initialState = {
   getTotal: null,
   bookPatient: getBookPatientsFromLocalStorage(),
   doctors: getDoctorsFromLocalStorage(),
-  cardsDetail: null,
+  cardsDetail: getCardsDetailFromLocalStorage(),
   got: false,
 };
 
@@ -84,7 +87,7 @@ export const getPatients = createAsyncThunk(
         respDataData: resp.data.data,
         respData: resp.data,
       };
-      console.log("response.....", Obj.respData);
+      console.log("response.....in getPatients", Obj.respData);
       console.log("OBJECT", Obj);
       return Obj;
     } catch (error) {
@@ -95,7 +98,7 @@ export const getPatients = createAsyncThunk(
 
 export const getCards = createAsyncThunk(
   "user/getCards",
-  async (patient_id, thunkAPI) => {
+  async ({ patient_id, corporate_id }, thunkAPI) => {
     console.log("getCards kya milraha hai yaha", patient_id);
 
     try {
@@ -104,6 +107,7 @@ export const getCards = createAsyncThunk(
         method: "GET",
         params: {
           patient_id: patient_id,
+          corp_id: corporate_id,
         },
         headers: {
           auth_token: getVerifyAuthTokenFromLocalStorage(),
@@ -115,7 +119,7 @@ export const getCards = createAsyncThunk(
 
       let Obj = {
         pageData: Pagination,
-        respDataData: resp.data.data,
+        respDataData: resp.data.common,
         respData: resp.data,
       };
       console.log("response.....", Obj.respData);
@@ -174,8 +178,10 @@ const appointmentSlice = createSlice({
     },
     removePateint: (state) => {
       state.bookPatient = null;
+      state.cardsDetail = null;
       state.got = false;
       removeBookPatientsFromLocalStorage();
+      removeCardsDetailFromLocalStorage();
     },
     removeDoctor: (state) => {
       state.doctors = null;
@@ -260,7 +266,7 @@ const appointmentSlice = createSlice({
         console.log("ACtions in getCards", respData);
         // state.userData = respDataData;
         state.cardsDetail = respDataData;
-        // addBookPatientsToLocalStorage(state.bookPatient);
+        addCardsDetailToLocalStorage([state.cardsDetail]);
         state.showAppoint = true;
         toast.success(`${respData.message}`);
         state.isLoading = false;

@@ -22,6 +22,9 @@ import {
   removeUserFromLocalStorage,
   removeVerifyAuthTokenFromLocalStorage,
   removeAppointmentsFromLocalStorage,
+  removeBookPatientsFromLocalStorage,
+  removeDoctorsFromLocalStorage,
+  removeCardsDetailFromLocalStorage,
 } from "../localStorage/LocalStorageData";
 
 const initialState = {
@@ -358,6 +361,10 @@ const userSlice = createSlice({
         removeUserDataFromLocalStorage();
         removePostalFromLocalStorage();
         removePostal2FromLocalStorage();
+        removeAppointmentsFromLocalStorage();
+        removeBookPatientsFromLocalStorage();
+        removeDoctorsFromLocalStorage();
+        removeCardsDetailFromLocalStorage();
         toast.success(`${actions.payload.message}`);
         state.isLoading = false;
       } else {
@@ -374,6 +381,9 @@ const userSlice = createSlice({
         removePostalFromLocalStorage();
         removePostal2FromLocalStorage();
         removeAppointmentsFromLocalStorage();
+        removeBookPatientsFromLocalStorage();
+        removeDoctorsFromLocalStorage();
+        removeCardsDetailFromLocalStorage();
         toast.error(`${actions.payload.message}`);
         state.isLoading = false;
       }

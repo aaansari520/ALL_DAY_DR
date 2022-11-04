@@ -258,3 +258,20 @@ export const getDoctorsFromLocalStorage = () => {
 export const removeDoctorsFromLocalStorage = () => {
   localStorage.removeItem("doctors");
 };
+
+// >>>>>>>>>>>>>>>>>>>>..getCardsDetail...<<<<<<<<<<<<<<<
+
+export const addCardsDetailToLocalStorage = (CardsDetail) => {
+  localStorage.setItem("CardsDetail", JSON.stringify(CardsDetail));
+};
+
+export const getCardsDetailFromLocalStorage = () => {
+  const result = localStorage.getItem("CardsDetail");
+  const CardsDetail = result ? JSON.parse(result) : null;
+
+  return CardsDetail;
+};
+
+export const removeCardsDetailFromLocalStorage = () => {
+  localStorage.removeItem("CardsDetail");
+};

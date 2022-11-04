@@ -14,7 +14,7 @@ const initialState = {
   open: true,
   surgery: getSurgeryFromLocalStorage(),
   patient: false,
-  // getId: getSurgeryIDFromLocalStorage(),
+  isLoading: false,
 };
 
 export const addPatients = createAsyncThunk(
@@ -109,13 +109,13 @@ const patientSlice = createSlice({
       console.log("ACtions in register", actions.payload.status);
 
       if (actions.payload.status === 200) {
-        // state.isLoading = false;
         console.log("ADDD PATIEN", actions);
         state.open = false;
         state.patient = true;
         toast.success(`${actions.payload.message}`);
         removeSurgeryFromLocalStorage();
         removeSurgeryIDFromLocalStorage();
+        state.isLoading = false;
       } else if (actions.payload.status !== 200) {
         state.isLoading = false;
         toast.error(`${actions.payload.message}`);

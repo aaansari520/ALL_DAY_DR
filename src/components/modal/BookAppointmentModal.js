@@ -1,7 +1,8 @@
-import { Form, Modal, Select } from "antd";
+import { DatePicker, Form, Modal, Select, Spin } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { getBookPatientsFromLocalStorage } from "../../localStorage/LocalStorageData";
 import {
   cancle,
   getCards,
@@ -12,12 +13,14 @@ import {
 } from "../../Redux/appointmentSlice";
 
 const BookAppointmentModal = () => {
-  const { showAppoint, bookPatient, got, doctors } = useSelector(
+  const { showAppoint, bookPatient, doctors, isLoading } = useSelector(
     (store) => store.appointmentsData
   );
-  console.log("bookPatient", bookPatient);
+
   const [searchedPatient, setSearchedPatient] = useState(null);
   const [searchedDoctor, setSearchedDoctor] = useState(null);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+
   const dispatch = useDispatch();
   const formRef = React.createRef();
   const firstUpdate = useRef(true);
@@ -51,9 +54,8 @@ const BookAppointmentModal = () => {
       if (firstUpdate.current) {
         firstUpdate.current = false;
       } else {
-        if (searchedDoctor , bookPatient) {
-          const patient_id = bookPatient.id;
-          console.log("bookPatient.id", patient_id);
+        if (searchedDoctor) {
+          const patient_id = selectedPatientId.id;
           dispatch(getDoctors({ searchedDoctor, patient_id }));
         }
       }
@@ -66,12 +68,19 @@ const BookAppointmentModal = () => {
   }, [searchedDoctor]);
 
   useEffect(() => {
-    if (got && bookPatient.id) {
-      const patient_id = bookPatient.id;
+    if (selectedPatientId) {
+      const patient_id = selectedPatientId.id;
+      const corporate_id = selectedPatientId.c_id;
       console.log("patient_id", patient_id);
-      dispatch(getCards(patient_id));
+      dispatch(getCards({ patient_id, corporate_id }));
     }
-  }, []);
+  }, [selectedPatientId]);
+
+  const gettingID = (id, c_id) => {
+    //  dispatch(updateId(id));
+    setSelectedPatientId({ id, c_id });
+    console.log("gettingID", id);
+  };
 
   return (
     <Modal
@@ -80,6 +89,14 @@ const BookAppointmentModal = () => {
       onCancel={handleCancel}
       footer=""
     >
+      {isLoading ? (
+        <div className="login-spinner">
+          <Spin size="middle"></Spin>
+        </div>
+      ) : (
+        ""
+      )}
+
       <div className="form-Design">
         <Form
           className="Form specificClass"
@@ -114,6 +131,13 @@ const BookAppointmentModal = () => {
                 setSearchedPatient(e);
                 console.log("setSearchedPatient", e);
               }}
+              onChange={function (e) {
+                const corp_id = getBookPatientsFromLocalStorage();
+                const c_id = corp_id.find((prev) => prev.id === e).corporate_id;
+                console.log("Onchange Me Filtering kya mila", c_id);
+                gettingID(e, c_id);
+                console.log("Onchange Me E kya mila", e, c_id);
+              }}
             >
               {bookPatient?.map((sur) => {
                 return (
@@ -125,7 +149,7 @@ const BookAppointmentModal = () => {
             </Select>
           </Form.Item>
 
-          {bookPatient ? (
+          {selectedPatientId ? (
             <Form.Item
               name="doctor"
               label="Doctor Name"
@@ -143,15 +167,36 @@ const BookAppointmentModal = () => {
                   setSearchedDoctor(e);
                   console.log("setSearchedPatient", e);
                 }}
+                // onChange={(e) => {
+                //   const change = e.target.value;
+                //   setDocId(change);
+                // }}
               >
                 {doctors?.map((sur) => {
                   return (
                     <Select.Option value={sur.id} allowClear key={sur.id}>
-                      {sur.first_name} {sur.first_name}
+                      {sur.first_name}
                     </Select.Option>
                   );
                 })}
               </Select>
+            </Form.Item>
+          ) : (
+            ""
+          )}
+
+          {doctors ? (
+            <Form.Item
+              name="date"
+              label="Date"
+              rules={[
+                {
+                  required: true,
+                  message: "This Field is Required!",
+                },
+              ]}
+            >
+              <DatePicker picker="date" />
             </Form.Item>
           ) : (
             ""

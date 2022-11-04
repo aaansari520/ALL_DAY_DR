@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Input, Table, Tag } from "antd";
+import { Button, Input, Spin, Table, Tag } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { getUser, searchBased } from "../../Redux/userSlice";
 import { Link } from "react-router-dom";
@@ -106,6 +106,13 @@ const PatientTable = () => {
   return (
     <div className="Table-Design">
       <div className="top">
+        {isLoading ? (
+          <div className="login-spinner">
+            <Spin size="middle"></Spin>
+          </div>
+        ) : (
+          ""
+        )}
         <Input.Search
           className="Table-input"
           placeholder="Search patients..."
@@ -133,7 +140,7 @@ const PatientTable = () => {
 
       {show ? (
         <Table
-          loading={isLoading}
+          // loading={isLoading}
           dataSource={patientData}
           columns={columns}
           pagination={{
