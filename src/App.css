@@ -584,3 +584,10 @@ body {
 .specificClass .ant-form-item {
   width: 400px !important;
 }
+
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>... RadioGroup...<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+.ant-radio-group {
+  display: flex;
+  align-items: center;
+}

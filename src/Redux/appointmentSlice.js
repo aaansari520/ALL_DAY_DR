@@ -6,14 +6,20 @@ import {
   addBookPatientsToLocalStorage,
   addCardsDetailToLocalStorage,
   addDoctorsToLocalStorage,
+  addStartTimeToLocalStorage,
+  addTimeSlotToLocalStorage,
   getAppointmentsFromLocalStorage,
   getBookPatientsFromLocalStorage,
   getCardsDetailFromLocalStorage,
   getDoctorsFromLocalStorage,
+  getStartTimeFromLocalStorage,
+  getTimeSlotFromLocalStorage,
   getVerifyAuthTokenFromLocalStorage,
   removeBookPatientsFromLocalStorage,
   removeCardsDetailFromLocalStorage,
   removeDoctorsFromLocalStorage,
+  removeStartTimeFromLocalStorage,
+  removeTimeSlotFromLocalStorage,
 } from "../localStorage/LocalStorageData";
 
 const initialState = {
@@ -24,6 +30,8 @@ const initialState = {
   bookPatient: getBookPatientsFromLocalStorage(),
   doctors: getDoctorsFromLocalStorage(),
   cardsDetail: getCardsDetailFromLocalStorage(),
+  timeSlot: getTimeSlotFromLocalStorage(),
+  startTime: getStartTimeFromLocalStorage(),
   got: false,
 };
 
@@ -52,8 +60,8 @@ export const getAppointments = createAsyncThunk(
         respDataData: resp.data.data,
         respData: resp.data,
       };
-      console.log("getAppointments Response.....", Obj.respData);
-      console.log("OBJECT", Obj);
+      // console.log("getAppointments Response.....", Obj.respData);
+      // console.log("OBJECT", Obj);
       return Obj;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
@@ -64,7 +72,7 @@ export const getAppointments = createAsyncThunk(
 export const getPatients = createAsyncThunk(
   "user/getPatients",
   async (searchedPatient, thunkAPI) => {
-    console.log("getPatients kya milraha hai yaha", searchedPatient);
+    // console.log("getPatients kya milraha hai yaha", searchedPatient);
 
     try {
       const resp = await customFetch({
@@ -87,8 +95,8 @@ export const getPatients = createAsyncThunk(
         respDataData: resp.data.data,
         respData: resp.data,
       };
-      console.log("response.....in getPatients", Obj.respData);
-      console.log("OBJECT", Obj);
+      // console.log("response.....in getPatients", Obj.respData);
+      // console.log("OBJECT", Obj);
       return Obj;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
@@ -99,7 +107,7 @@ export const getPatients = createAsyncThunk(
 export const getCards = createAsyncThunk(
   "user/getCards",
   async ({ patient_id, corporate_id }, thunkAPI) => {
-    console.log("getCards kya milraha hai yaha", patient_id);
+    // console.log("getCards kya milraha hai yaha", patient_id);
 
     try {
       const resp = await customFetch({
@@ -122,8 +130,8 @@ export const getCards = createAsyncThunk(
         respDataData: resp.data.common,
         respData: resp.data,
       };
-      console.log("response.....", Obj.respData);
-      console.log("OBJECT", Obj);
+      // console.log("response.....", Obj.respData);
+      // console.log("OBJECT", Obj);
       return Obj;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
@@ -166,6 +174,42 @@ export const getDoctors = createAsyncThunk(
   }
 );
 
+export const getTimeSlot = createAsyncThunk(
+  "user/getTimeSlot",
+  async ({ date, docId }, thunkAPI) => {
+    // console.log("getPatients kya milraha hai yaha", );
+    try {
+      const resp = await customFetch({
+        url: "/api/doctor/appointments/slot_for_clinicians.json",
+        method: "GET",
+        params: {
+          date: date,
+          doctor_id: docId,
+          zone: 19800,
+        },
+        headers: {
+          auth_token: getVerifyAuthTokenFromLocalStorage(),
+        },
+      });
+
+      const result = resp.headers["x-pagination"];
+      let Pagination = result ? JSON.parse(result) : null;
+
+      let Obj = {
+        pageData: Pagination,
+        respDataCommon: resp.data.common,
+        respDataData: resp.data.data,
+        respData: resp.data,
+      };
+      console.log("response..... in getTimeSlot", Obj.respData);
+      console.log("OBJECT in getTimeSlot", Obj);
+      return Obj;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 const appointmentSlice = createSlice({
   name: "appointments",
   initialState,
@@ -179,14 +223,22 @@ const appointmentSlice = createSlice({
     removePateint: (state) => {
       state.bookPatient = null;
       state.cardsDetail = null;
+      state.timeSlot = null;
+      state.startTime = null;
       state.got = false;
       removeBookPatientsFromLocalStorage();
       removeCardsDetailFromLocalStorage();
+      removeTimeSlotFromLocalStorage();
+      removeStartTimeFromLocalStorage();
     },
     removeDoctor: (state) => {
       state.doctors = null;
+      state.timeSlot = null;
+      state.startTime = null;
       state.got = false;
       removeDoctorsFromLocalStorage();
+      removeStartTimeFromLocalStorage();
+      removeTimeSlotFromLocalStorage();
     },
   },
   extraReducers: {
@@ -309,6 +361,39 @@ const appointmentSlice = createSlice({
       }
     },
     [getDoctors.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      toast.error(payload.message);
+    },
+    [getTimeSlot.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [getTimeSlot.fulfilled]: (state, { payload }) => {
+      const { pageData, respDataData, respData, respDataCommon } = payload;
+      if (respData.status === 200) {
+        if (respData.message === "Time slots available for this date.") {
+          state.show = true;
+          console.log("Appointments Data", payload);
+          console.log("ACtions in getTimeSlot", respData);
+          state.timeSlot = respDataCommon;
+          state.startTime = respDataData;
+          state.showAppoint = true;
+          toast.success(`${respData.message}`);
+          state.isLoading = false;
+          state.got = true;
+          addTimeSlotToLocalStorage([state.timeSlot]);
+          addStartTimeToLocalStorage(state.startTime);
+        } else if (respData.message === "No time slots available.") {
+          state.isLoading = false;
+          state.timeSlot = null;
+          state.startTime = null;
+          toast.error(`${respData.message}`);
+        }
+      } else {
+        toast.error(`${respData.message}`);
+        state.isLoading = false;
+      }
+    },
+    [getTimeSlot.rejected]: (state, { payload }) => {
       state.isLoading = false;
       toast.error(payload.message);
     },

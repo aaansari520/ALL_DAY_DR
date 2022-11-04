@@ -25,6 +25,7 @@ import {
   removeBookPatientsFromLocalStorage,
   removeDoctorsFromLocalStorage,
   removeCardsDetailFromLocalStorage,
+  removeTimeSlotFromLocalStorage,
 } from "../localStorage/LocalStorageData";
 
 const initialState = {
@@ -365,6 +366,7 @@ const userSlice = createSlice({
         removeBookPatientsFromLocalStorage();
         removeDoctorsFromLocalStorage();
         removeCardsDetailFromLocalStorage();
+        removeTimeSlotFromLocalStorage();
         toast.success(`${actions.payload.message}`);
         state.isLoading = false;
       } else {
@@ -384,6 +386,7 @@ const userSlice = createSlice({
         removeBookPatientsFromLocalStorage();
         removeDoctorsFromLocalStorage();
         removeCardsDetailFromLocalStorage();
+        removeTimeSlotFromLocalStorage();
         toast.error(`${actions.payload.message}`);
         state.isLoading = false;
       }

@@ -1,4 +1,4 @@
-import { DatePicker, Form, Modal, Select, Spin } from "antd";
+import { DatePicker, Form, Modal, Radio, Select, Spin } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -8,22 +8,26 @@ import {
   getCards,
   getDoctors,
   getPatients,
+  getTimeSlot,
   removeDoctor,
   removePateint,
 } from "../../Redux/appointmentSlice";
+import moment from "moment";
 
 const BookAppointmentModal = () => {
-  const { showAppoint, bookPatient, doctors, isLoading } = useSelector(
-    (store) => store.appointmentsData
-  );
+  const { showAppoint, bookPatient, startTime, doctors, isLoading, timeSlot } =
+    useSelector((store) => store.appointmentsData);
 
   const [searchedPatient, setSearchedPatient] = useState(null);
   const [searchedDoctor, setSearchedDoctor] = useState(null);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [docId, setDocId] = useState(null);
+  // const [timeSlot, setTimeSlot] = useState(null);
 
   const dispatch = useDispatch();
   const formRef = React.createRef();
   const firstUpdate = useRef(true);
+  const DATE_FORMAT = "DD-MM-YYYY";
   const navigate = useNavigate();
   const handleCancel = () => {
     dispatch(cancle());
@@ -80,6 +84,31 @@ const BookAppointmentModal = () => {
     //  dispatch(updateId(id));
     setSelectedPatientId({ id, c_id });
     console.log("gettingID", id);
+  };
+
+  const gettingDocID = (id) => {
+    setDocId(id);
+    console.log("gettingDocID", id);
+  };
+
+  const handleDatepicker = (e) => {
+    const date = moment(e).format();
+    console.log("Date.....", date);
+    dispatch(getTimeSlot({ date, docId }));
+  };
+
+  const formatAMPM = (date) => {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours %= 12;
+    hours = hours || 12;
+    minutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    const strTime = `${hours}:${minutes} ${ampm}`;
+
+    return strTime;
   };
 
   return (
@@ -167,10 +196,10 @@ const BookAppointmentModal = () => {
                   setSearchedDoctor(e);
                   console.log("setSearchedPatient", e);
                 }}
-                // onChange={(e) => {
-                //   const change = e.target.value;
-                //   setDocId(change);
-                // }}
+                onChange={(e) => {
+                  gettingDocID(e);
+                  console.log("Change in ", e);
+                }}
               >
                 {doctors?.map((sur) => {
                   return (
@@ -185,7 +214,7 @@ const BookAppointmentModal = () => {
             ""
           )}
 
-          {doctors ? (
+          {docId ? (
             <Form.Item
               name="date"
               label="Date"
@@ -196,11 +225,83 @@ const BookAppointmentModal = () => {
                 },
               ]}
             >
-              <DatePicker picker="date" />
+              <DatePicker
+                picker="date"
+                format={DATE_FORMAT}
+                onChange={handleDatepicker}
+              />
             </Form.Item>
           ) : (
             ""
           )}
+
+          {startTime ? (
+            <Form.Item
+              name="time"
+              label="Time Slots"
+              rules={[
+                {
+                  required: true,
+                  message: "This Field is Required!",
+                },
+              ]}
+            >
+              <Select filterOption={false}>
+                {startTime?.map((time) => {
+                  let date = new Date(Date.parse(time.start_time));
+                  // console.log("Time kaise chalraha", date);
+                  // let newTime = `${date.getMinutes()}:${date.getSeconds()}`;
+                  let newTime = formatAMPM(date);
+                  // console.log("Time kaise chalraha", newTime);
+                  return (
+                    <Select.Option
+                      value={time.start_time}
+                      allowClear
+                      key={time.start_time}
+                    >
+                      {newTime}
+                    </Select.Option>
+                  );
+                })}
+              </Select>
+            </Form.Item>
+          ) : (
+            ""
+          )}
+
+          {timeSlot && timeSlot ? (
+            <Form.Item
+              name="duration"
+              label="Select Duration"
+              rules={[
+                {
+                  required: true,
+                  message: "This Field is Required!",
+                },
+              ]}
+            >
+              {timeSlot.slot_durations && (
+                <Select filterOption={false}>
+                  {timeSlot?.slot_durations.split(",").map((time) => {
+                    return (
+                      <Select.Option value={time} allowClear key={time}>
+                        {time}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              )}
+            </Form.Item>
+          ) : (
+            ""
+          )}
+
+          <label>Appointment Type</label>
+          <Radio.Group name="appointment_type">
+            <Radio value={"video"}>Video</Radio>
+            <Radio value={"phone_call"}>Phone Call</Radio>
+            <Radio value={"face_to_face"}>Face to Face</Radio>
+          </Radio.Group>
         </Form>
       </div>
     </Modal>

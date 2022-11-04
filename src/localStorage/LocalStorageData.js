@@ -275,3 +275,35 @@ export const getCardsDetailFromLocalStorage = () => {
 export const removeCardsDetailFromLocalStorage = () => {
   localStorage.removeItem("CardsDetail");
 };
+
+// >>>>>>>>>>>>>>>>>>>>..getTimeSlot...<<<<<<<<<<<<<<<
+
+export const addTimeSlotToLocalStorage = (TimeSlot) => {
+  localStorage.setItem("TimeSlot", JSON.stringify(TimeSlot));
+};
+export const getTimeSlotFromLocalStorage = () => {
+  const result = localStorage.getItem("TimeSlot");
+  const TimeSlot = result ? JSON.parse(result) : null;
+
+  return TimeSlot;
+};
+
+export const removeTimeSlotFromLocalStorage = () => {
+  localStorage.removeItem("TimeSlot");
+};
+
+// >>>>>>>>>>>>>>>>>>>>..getStartTime...<<<<<<<<<<<<<<<
+
+export const addStartTimeToLocalStorage = (StartTime) => {
+  localStorage.setItem("StartTime", JSON.stringify(StartTime));
+};
+export const getStartTimeFromLocalStorage = () => {
+  const result = localStorage.getItem("StartTime");
+  const StartTime = result ? JSON.parse(result) : null;
+
+  return StartTime;
+};
+
+export const removeStartTimeFromLocalStorage = () => {
+  localStorage.removeItem("StartTime");
+};
