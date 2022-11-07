@@ -24,11 +24,14 @@ const BookAppointmentModal = () => {
     isLoading,
     timeSlot,
     cardsDetail,
+    SubmitAppointment,
+    upDateInRealTime,
   } = useSelector((store) => store.appointmentsData);
 
   const [searchedPatient, setSearchedPatient] = useState(null);
   const [searchedDoctor, setSearchedDoctor] = useState(null);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [handlingDatePick, setHandlingDatePick] = useState(null);
   const [docId, setDocId] = useState(null);
   const [show, setShow] = useState(false);
   const [showCards, setShowCards] = useState(false);
@@ -103,9 +106,27 @@ const BookAppointmentModal = () => {
     console.log("gettingDocID", id);
   };
 
+  useEffect(() => {
+    if (upDateInRealTime) {
+      const patient_id = selectedPatientId.id;
+      const corporate_id = selectedPatientId.c_id;
+      dispatch(getPatients(searchedPatient));
+      dispatch(getDoctors({ searchedDoctor, patient_id }));
+      dispatch(getCards({ patient_id, corporate_id }));
+      dispatch(getTimeSlot(handlingDatePick));
+    }
+  }, [upDateInRealTime]);
+
+  // const handleDatepicker = (e) => {
+  //   const date = moment(e).format();
+  //   console.log("Date.....", date);
+  //   dispatch(getTimeSlot({ date, docId }));
+  // };
+
   const handleDatepicker = (e) => {
     const date = moment(e).format();
     console.log("Date.....", date);
+    setHandlingDatePick({ date, docId });
     dispatch(getTimeSlot({ date, docId }));
   };
 
@@ -136,6 +157,14 @@ const BookAppointmentModal = () => {
     setShowCards(true);
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      if (SubmitAppointment) {
+        navigate("/appointmentsTable");
+      }
+    }, 2000);
+  }, [SubmitAppointment]);
+
   return (
     <Modal
       open={showAppoint}
@@ -164,9 +193,11 @@ const BookAppointmentModal = () => {
             // console.log("Appointment Data values", values);
             // console.log("Appointment Data value", value);
             // console.log("Appointment Data valueRadio", valueRadio);
-            formRef.current.resetFields();
+
             setTimeout(() => {
-              navigate("/appointmentsTable");
+              if (SubmitAppointment) {
+                formRef.current.resetFields();
+              }
             }, 2000);
           }}
           ref={formRef}
@@ -298,7 +329,7 @@ const BookAppointmentModal = () => {
             ""
           )}
 
-          {timeSlot && timeSlot ? (
+          {timeSlot ? (
             <Form.Item
               name="duration"
               label="Select Duration"

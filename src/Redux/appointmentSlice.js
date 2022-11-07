@@ -37,7 +37,8 @@ const initialState = {
   startTime: getStartTimeFromLocalStorage(),
   statusLogData: getStatusLogFromLocalStorage(),
   StatusId: null,
-
+  SubmitAppointment: false,
+  upDateInRealTime: false,
   got: false,
 };
 
@@ -281,6 +282,12 @@ const appointmentSlice = createSlice({
   reducers: {
     cancle: (state) => {
       state.showAppoint = false;
+      removeCardsDetailFromLocalStorage();
+      removeTimeSlotFromLocalStorage();
+      removeStartTimeFromLocalStorage();
+      removeStatusLogFromLocalStorage();
+      removeBookPatientsFromLocalStorage();
+      removeDoctorsFromLocalStorage();
     },
     cancleAppLog: (state) => {
       state.StatusId = null;
@@ -299,6 +306,7 @@ const appointmentSlice = createSlice({
       state.timeSlot = null;
       state.startTime = null;
       state.got = false;
+      state.upDateInRealTime = false;
       removeBookPatientsFromLocalStorage();
       removeCardsDetailFromLocalStorage();
       removeTimeSlotFromLocalStorage();
@@ -309,6 +317,7 @@ const appointmentSlice = createSlice({
       state.timeSlot = null;
       state.startTime = null;
       state.got = false;
+      state.upDateInRealTime = false;
       removeDoctorsFromLocalStorage();
       removeStartTimeFromLocalStorage();
       removeTimeSlotFromLocalStorage();
@@ -336,6 +345,7 @@ const appointmentSlice = createSlice({
         state.showAppoint = true;
         toast.success(`${respData.message}`);
         state.isLoading = false;
+        state.SubmitAppointment = false;
       } else {
         toast.error(`${respData.message}`);
         state.isLoading = false;
@@ -497,12 +507,14 @@ const appointmentSlice = createSlice({
 
     [postBookAppointmentData.pending]: (state) => {
       state.isLoading = true;
+      state.upDateInRealTime = false;
     },
     [postBookAppointmentData.fulfilled]: (state, { payload }) => {
       console.log("Payload me kya mila", payload);
       const { data, message, status } = payload;
 
       if (status === 200) {
+        state.SubmitAppointment = true;
         state.bookPatient = null;
         state.doctors = null;
         state.cardsDetail = null;
@@ -519,23 +531,17 @@ const appointmentSlice = createSlice({
         removeDoctorsFromLocalStorage();
         toast.success(`${message}`);
         state.isLoading = false;
-
-        if (status === 801) {
-          state.bookPatient = null;
-          state.doctors = null;
-          state.cardsDetail = null;
-          state.timeSlot = null;
-          state.startTime = null;
-          state.statusLogData = null;
-          state.StatusId = null;
-
-          removeCardsDetailFromLocalStorage();
-          removeTimeSlotFromLocalStorage();
-          removeStartTimeFromLocalStorage();
-          removeStatusLogFromLocalStorage();
-          removeBookPatientsFromLocalStorage();
-          removeDoctorsFromLocalStorage();
-        }
+      } else if (status === 801) {
+        state.bookPatient = getBookPatientsFromLocalStorage();
+        state.doctors = getDoctorsFromLocalStorage();
+        state.cardsDetail = getCardsDetailFromLocalStorage();
+        state.timeSlot = getTimeSlotFromLocalStorage();
+        state.startTime = getStartTimeFromLocalStorage();
+        state.statusLogData = getStatusLogFromLocalStorage();
+        state.SubmitAppointment = false;
+        state.upDateInRealTime = true;
+        toast.error(`${message}`);
+        state.isLoading = false;
       } else {
         state.bookPatient = null;
         state.doctors = null;
