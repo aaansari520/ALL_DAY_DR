@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
+  addingStatusId,
   getAppoinmentsLog,
   getAppointments,
 } from "../../Redux/appointmentSlice";
@@ -22,6 +23,7 @@ const AppointmentsTable = () => {
       const { id } = e[0];
       const appointment_id = id;
       dispatch(getAppoinmentsLog(appointment_id));
+      dispatch(addingStatusId(appointment_id));
     }
   };
 
@@ -43,37 +45,44 @@ const AppointmentsTable = () => {
     {
       title: "Date & Time",
       dataIndex: "actual_start_time",
-
-      sorter: (record1, record2) => {
-        return record1.actual_start_time > record2.actual_start_time;
+      render: (text, record) => {
+        return (
+          <a>
+            <p>{moment(text).format("DD-MM-YYYY h:mm:ss a")}</p>
+          </a>
+        );
       },
     },
     {
       title: "Status",
       dataIndex: "status",
-      // render: (text, record) => {
-      //   <a>
-      //     <p>{text ? text :""}</p>;
-      //   </a>;
-      // },
     },
     {
       title: "Booked By",
       dataIndex: ["appointment_generated_by", "name"],
       render: (text, row) => (
-        <a>
-          {text}
-          <p style={{ display: "flex", justifyContent: "center" }}>
-            <b
-              style={{
-                marginTop: "5px",
-                backgroundColor: "blueviolet",
-              }}
-            >
-              {row.book_via}
-            </b>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <span> {text}</span>
+          <p
+            style={{
+              marginTop: "5px",
+              backgroundColor: "blueviolet",
+              color: "white",
+              padding: "0 5px",
+              borderRadius: "3px",
+              fontWeight: "bold",
+            }}
+          >
+            {row.book_via}
           </p>
-        </a>
+        </div>
       ),
       filteredValue: [searchedText],
       onFilter: (value, record) => {
@@ -86,20 +95,27 @@ const AppointmentsTable = () => {
       title: "Patient Detail",
       dataIndex: "email",
       render: (text, row) => (
-        <a>
-          {text}{" "}
-          <p style={{ display: "flex", justifyContent: "center" }}>
-            <b
-              style={{
-                marginTop: "5px",
-
-                backgroundColor: "pink",
-              }}
-            >
-              {row.appointment_type}
-            </b>
-          </p>{" "}
-        </a>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <span>{text}</span>
+          <p
+            style={{
+              marginTop: "5px",
+              backgroundColor: "pink",
+              padding: "0 5px",
+              borderRadius: "3px",
+              fontWeight: "bold",
+            }}
+          >
+            {row.appointment_type}
+          </p>
+        </div>
       ),
     },
     {
@@ -117,7 +133,12 @@ const AppointmentsTable = () => {
       render: (text, record) => (
         <>
           <Link to="/statusLogTable">
-            <button onClick={() => onChangeStatusLog([record])}>{"Log"}</button>
+            <button
+              style={{ width: "90px" }}
+              onClick={() => onChangeStatusLog([record])}
+            >
+              {"Status Log"}
+            </button>
           </Link>
         </>
       ),

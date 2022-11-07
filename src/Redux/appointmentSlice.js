@@ -36,6 +36,7 @@ const initialState = {
   timeSlot: getTimeSlotFromLocalStorage(),
   startTime: getStartTimeFromLocalStorage(),
   statusLogData: getStatusLogFromLocalStorage(),
+  StatusId: null,
   got: false,
 };
 
@@ -247,7 +248,12 @@ const appointmentSlice = createSlice({
       state.showAppoint = false;
     },
     cancleAppLog: (state) => {
+      state.StatusId = null;
       removeStatusLogFromLocalStorage();
+    },
+    addingStatusId: (state, actions) => {
+      state.StatusId = actions.payload;
+      console.log("actions addingStatusId", actions.payload);
     },
     openModal: (state) => {
       state.showAppoint = true;
@@ -462,6 +468,7 @@ export const {
   updateId,
   removeDoctor,
   cancleAppLog,
+  addingStatusId,
 } = appointmentSlice.actions;
 
 export default appointmentSlice.reducer;
