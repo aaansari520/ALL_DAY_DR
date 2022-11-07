@@ -1,8 +1,12 @@
 import { Button, Input, Spin, Table, Tag } from "antd";
+import moment from "moment/moment";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { getAppointments } from "../../Redux/appointmentSlice";
+import {
+  getAppoinmentsLog,
+  getAppointments,
+} from "../../Redux/appointmentSlice";
 
 const AppointmentsTable = () => {
   const { appointments, isLoading, showAppoint, getTotal } = useSelector(
@@ -11,6 +15,15 @@ const AppointmentsTable = () => {
   const dispatch = useDispatch();
   const [page1, setPage] = useState(1);
   const [searchedText, setSearchedText] = useState("");
+
+  const onChangeStatusLog = (e) => {
+    if (e) {
+      console.log("onChangeStatusLog", e);
+      const { id } = e[0];
+      const appointment_id = id;
+      dispatch(getAppoinmentsLog(appointment_id));
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -30,6 +43,7 @@ const AppointmentsTable = () => {
     {
       title: "Date & Time",
       dataIndex: "actual_start_time",
+
       sorter: (record1, record2) => {
         return record1.actual_start_time > record2.actual_start_time;
       },
@@ -37,10 +51,15 @@ const AppointmentsTable = () => {
     {
       title: "Status",
       dataIndex: "status",
+      // render: (text, record) => {
+      //   <a>
+      //     <p>{text ? text :""}</p>;
+      //   </a>;
+      // },
     },
     {
       title: "Booked By",
-      dataIndex: "booked_by",
+      dataIndex: ["appointment_generated_by", "name"],
       render: (text, row) => (
         <a>
           {text}
@@ -85,11 +104,23 @@ const AppointmentsTable = () => {
     },
     {
       title: "Conducted By",
-      dataIndex: "conducted_by",
+      dataIndex: ["gp_details", "first_name"],
+      render: (text, row) => (
+        <a>
+          {text} {row.gp_details?.last_name ? row.gp_details?.last_name : ""}{" "}
+          {`${row.gp_details?.role ? `(${row.gp_details?.role})` : ""}`}
+        </a>
+      ),
     },
     {
       title: "Actions",
-      //   dataIndex: "date_of_birth",
+      render: (text, record) => (
+        <>
+          <Link to="/statusLogTable">
+            <button onClick={() => onChangeStatusLog([record])}>{"Log"}</button>
+          </Link>
+        </>
+      ),
     },
   ];
 

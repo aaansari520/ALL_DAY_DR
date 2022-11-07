@@ -22,7 +22,9 @@ const BookAppointmentModal = () => {
   const [searchedDoctor, setSearchedDoctor] = useState(null);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [docId, setDocId] = useState(null);
-  // const [timeSlot, setTimeSlot] = useState(null);
+  const [show, setShow] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const [value, setValue] = useState(null);
 
   const dispatch = useDispatch();
   const formRef = React.createRef();
@@ -109,6 +111,18 @@ const BookAppointmentModal = () => {
     const strTime = `${hours}:${minutes} ${ampm}`;
 
     return strTime;
+  };
+
+  const onChangeRadio = (e) => {
+    console.log("radio checked", e.target.value);
+    setValue(e.target.value);
+    setShow(true);
+  };
+
+  const onChangePayment = (e) => {
+    console.log("radio checked for payment", e.target.value);
+    setValue(e.target.value);
+    setShowButton(true);
   };
 
   return (
@@ -296,12 +310,33 @@ const BookAppointmentModal = () => {
             ""
           )}
 
-          <label>Appointment Type</label>
-          <Radio.Group name="appointment_type">
-            <Radio value={"video"}>Video</Radio>
-            <Radio value={"phone_call"}>Phone Call</Radio>
-            <Radio value={"face_to_face"}>Face to Face</Radio>
-          </Radio.Group>
+          {docId ? (
+            <div className="ant-radio-groupLabel">
+              <p>Appointment Type :</p>
+              <div>
+                <Radio.Group name="appointment_type" onChange={onChangeRadio}>
+                  <Radio value={"video"}>Video</Radio>
+                  <Radio value={"phone_call"}>Phone Call</Radio>
+                  <Radio value={"face_to_face"}>Face to Face</Radio>
+                </Radio.Group>
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
+
+          {show ? (
+            <div className="ant-radio-groupLabel">
+              <p>Payment Mode :</p>
+              <div>
+                <Radio.Group name="appointment_type" onChange={onChangePayment}>
+                  <Radio value={"payment_method_mode"}>Cards</Radio>
+                </Radio.Group>
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
         </Form>
       </div>
     </Modal>

@@ -307,3 +307,19 @@ export const getStartTimeFromLocalStorage = () => {
 export const removeStartTimeFromLocalStorage = () => {
   localStorage.removeItem("StartTime");
 };
+
+// >>>>>>>>>>>>>>>>>>>>..getStatusLog...<<<<<<<<<<<<<<<
+
+export const addStatusLogToLocalStorage = (StatusLog) => {
+  localStorage.setItem("StatusLog", JSON.stringify(StatusLog));
+};
+export const getStatusLogFromLocalStorage = () => {
+  const result = localStorage.getItem("StatusLog");
+  const StatusLog = result ? JSON.parse(result) : null;
+
+  return StatusLog;
+};
+
+export const removeStatusLogFromLocalStorage = () => {
+  localStorage.removeItem("StatusLog");
+};

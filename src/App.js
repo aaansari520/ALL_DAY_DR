@@ -18,6 +18,7 @@ import Profile from "./components/inside/Profile";
 import ResetPass from "./components/inside/ResetPassword";
 import AppointmentsTable from "./components/table/AppointmentsTable";
 import BookAppointmentModal from "./components/modal/BookAppointmentModal";
+import StatusLogTable from "./components/table/StatusLogTable";
 
 function App() {
   const { showNav, auth } = useSelector((store) => store.user);
@@ -49,6 +50,7 @@ function App() {
           <Route path="/modal" element={<PatientModal />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/appointmentsTable" element={<AppointmentsTable />} />
+          <Route path="/statusLogTable" element={<StatusLogTable />} />
           <Route
             path="/bookAppointmentModal"
             element={<BookAppointmentModal />}

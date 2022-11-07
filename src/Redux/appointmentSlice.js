@@ -7,18 +7,21 @@ import {
   addCardsDetailToLocalStorage,
   addDoctorsToLocalStorage,
   addStartTimeToLocalStorage,
+  addStatusLogToLocalStorage,
   addTimeSlotToLocalStorage,
   getAppointmentsFromLocalStorage,
   getBookPatientsFromLocalStorage,
   getCardsDetailFromLocalStorage,
   getDoctorsFromLocalStorage,
   getStartTimeFromLocalStorage,
+  getStatusLogFromLocalStorage,
   getTimeSlotFromLocalStorage,
   getVerifyAuthTokenFromLocalStorage,
   removeBookPatientsFromLocalStorage,
   removeCardsDetailFromLocalStorage,
   removeDoctorsFromLocalStorage,
   removeStartTimeFromLocalStorage,
+  removeStatusLogFromLocalStorage,
   removeTimeSlotFromLocalStorage,
 } from "../localStorage/LocalStorageData";
 
@@ -32,6 +35,7 @@ const initialState = {
   cardsDetail: getCardsDetailFromLocalStorage(),
   timeSlot: getTimeSlotFromLocalStorage(),
   startTime: getStartTimeFromLocalStorage(),
+  statusLogData: getStatusLogFromLocalStorage(),
   got: false,
 };
 
@@ -210,12 +214,40 @@ export const getTimeSlot = createAsyncThunk(
   }
 );
 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+export const getAppoinmentsLog = createAsyncThunk(
+  "user/getAppoinmentsLog",
+  async (appointment_id, thunkAPI) => {
+    console.log("getAppoinmentsLog kya milraha hai yaha", appointment_id);
+    try {
+      const resp = await customFetch({
+        url: "/api/appointments/log_entries.json",
+        method: "GET",
+        params: {
+          appointment_id: appointment_id,
+        },
+        headers: {
+          auth_token: getVerifyAuthTokenFromLocalStorage(),
+        },
+      });
+      console.log("response.....in getAppoinmentsLog", resp.data);
+      return resp.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 const appointmentSlice = createSlice({
   name: "appointments",
   initialState,
   reducers: {
     cancle: (state) => {
       state.showAppoint = false;
+    },
+    cancleAppLog: (state) => {
+      removeStatusLogFromLocalStorage();
     },
     openModal: (state) => {
       state.showAppoint = true;
@@ -246,15 +278,15 @@ const appointmentSlice = createSlice({
       state.isLoading = true;
     },
     [getAppointments.fulfilled]: (state, { payload }) => {
-      console.log("Payload me kya mila", payload);
+      // console.log("Payload me kya mila", payload);
       const { pageData, respDataData, respData } = payload;
-      console.log("Payload Destructure", respData);
-      console.log("Response data data", respDataData);
+      // console.log("Payload Destructure", respData);
+      // console.log("Response data data", respDataData);
 
       if (respData.status === 200) {
         state.show = true;
-        console.log("Appointments Data", payload);
-        console.log("ACtions in getAppointments", respData);
+        // console.log("Appointments Data", payload);
+        // console.log("ACtions in getAppointments", respData);
         // state.userData = respDataData;
         state.appointments = respDataData;
         state.totalPages = pageData.total_pages;
@@ -309,14 +341,13 @@ const appointmentSlice = createSlice({
     [getCards.fulfilled]: (state, { payload }) => {
       console.log("getCards Payload me kya mila", payload);
       const { pageData, respDataData, respData } = payload;
-      console.log(" getCards Payload Destructure", respData);
-      console.log(" getCards Response data data", respDataData);
+      // console.log(" getCards Payload Destructure", respData);
+      // console.log(" getCards Response data data", respDataData);
 
       if (respData.status === 200) {
         state.show = true;
-        console.log("getCards cards Data", payload);
-        console.log("ACtions in getCards", respData);
-        // state.userData = respDataData;
+        // console.log("getCards cards Data", payload);
+        // console.log("ACtions in getCards", respData);
         state.cardsDetail = respDataData;
         addCardsDetailToLocalStorage([state.cardsDetail]);
         state.showAppoint = true;
@@ -339,15 +370,15 @@ const appointmentSlice = createSlice({
       state.isLoading = true;
     },
     [getDoctors.fulfilled]: (state, { payload }) => {
-      console.log("Payload me kya mila", payload);
+      // console.log("Payload me kya mila", payload);
       const { pageData, respDataData, respData } = payload;
-      console.log("Payload Destructure", respData);
-      console.log("Response data data", respDataData);
+      // console.log("Payload Destructure", respData);
+      // console.log("Response data data", respDataData);
 
       if (respData.status === 200) {
         state.show = true;
-        console.log("Appointments Data", payload);
-        console.log("ACtions in getDoctors", respData);
+        // console.log("Appointments Data", payload);
+        // console.log("ACtions in getDoctors", respData);
         // state.userData = respDataData;
         state.doctors = respDataData;
         addDoctorsToLocalStorage(state.doctors);
@@ -372,8 +403,8 @@ const appointmentSlice = createSlice({
       if (respData.status === 200) {
         if (respData.message === "Time slots available for this date.") {
           state.show = true;
-          console.log("Appointments Data", payload);
-          console.log("ACtions in getTimeSlot", respData);
+          // console.log("Appointments Data", payload);
+          // console.log("ACtions in getTimeSlot", respData);
           state.timeSlot = respDataCommon;
           state.startTime = respDataData;
           state.showAppoint = true;
@@ -397,10 +428,40 @@ const appointmentSlice = createSlice({
       state.isLoading = false;
       toast.error(payload.message);
     },
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    [getAppoinmentsLog.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [getAppoinmentsLog.fulfilled]: (state, { payload }) => {
+      console.log("Payload me kya mila", payload);
+      const { data, message, status } = payload;
+      console.log("Response in getAppoinmentsLog", data);
+
+      if (status === 200) {
+        state.statusLogData = data;
+        addStatusLogToLocalStorage(state.statusLogData);
+        toast.success(`${message}`);
+        state.isLoading = false;
+      } else {
+        toast.error(`${message}`);
+        state.isLoading = false;
+      }
+    },
+    [getAppoinmentsLog.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      toast.error(payload.message);
+    },
   },
 });
 
-export const { cancle, openModal, removePateint, updateId, removeDoctor } =
-  appointmentSlice.actions;
+export const {
+  cancle,
+  openModal,
+  removePateint,
+  updateId,
+  removeDoctor,
+  cancleAppLog,
+} = appointmentSlice.actions;
 
 export default appointmentSlice.reducer;

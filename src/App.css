@@ -587,7 +587,15 @@ body {
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>... RadioGroup...<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
+.ant-radio-groupLabel {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-width: 0;
+  padding-left: 45px;
+}
 .ant-radio-group {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  padding-left: 20px;
 }

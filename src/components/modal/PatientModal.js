@@ -12,6 +12,7 @@ import {
 import { UploadOutlined } from "@ant-design/icons";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
+import en from "react-phone-number-input/locale/en";
 
 const { TextArea } = Input;
 
@@ -174,6 +175,8 @@ const PatientModal = () => {
               hasFeedback
             >
               <PhoneInput
+                label={en}
+                defaultCountry="IN"
                 international
                 countryCallingCodeEditable={false}
                 placeholder="Type your phone no."
