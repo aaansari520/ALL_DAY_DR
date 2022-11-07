@@ -37,6 +37,7 @@ const initialState = {
   startTime: getStartTimeFromLocalStorage(),
   statusLogData: getStatusLogFromLocalStorage(),
   StatusId: null,
+
   got: false,
 };
 
@@ -132,7 +133,7 @@ export const getCards = createAsyncThunk(
 
       let Obj = {
         pageData: Pagination,
-        respDataData: resp.data.common,
+        respDataData: resp.data.data,
         respData: resp.data,
       };
       // console.log("response.....", Obj.respData);
@@ -227,6 +228,40 @@ export const getAppoinmentsLog = createAsyncThunk(
         method: "GET",
         params: {
           appointment_id: appointment_id,
+        },
+        headers: {
+          auth_token: getVerifyAuthTokenFromLocalStorage(),
+        },
+      });
+      console.log("response.....in getAppoinmentsLog", resp.data);
+      return resp.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+export const postBookAppointmentData = createAsyncThunk(
+  "user/postBookAppointmentData",
+  async ({ values, value, selectedPatientId }, thunkAPI) => {
+    const { doctor_id, duration, start_time, cardIdentifier } = values;
+    const appointment_type = value;
+    const patient_id = selectedPatientId.id;
+    const appointment = { appointment_type, doctor_id, duration, start_time };
+    const organization_id = selectedPatientId.c_id;
+    const cardIdentifier1 = cardIdentifier;
+
+    try {
+      const resp = await customFetch({
+        url: "/api/priory/patient/appointments.json",
+        method: "POST",
+        data: {
+          appointment: appointment,
+          cardIdentifier: cardIdentifier1,
+          organization_id: organization_id,
+          patient_id: patient_id,
         },
         headers: {
           auth_token: getVerifyAuthTokenFromLocalStorage(),
@@ -348,7 +383,7 @@ const appointmentSlice = createSlice({
       console.log("getCards Payload me kya mila", payload);
       const { pageData, respDataData, respData } = payload;
       // console.log(" getCards Payload Destructure", respData);
-      // console.log(" getCards Response data data", respDataData);
+      console.log(" getCards Response data data", respDataData);
 
       if (respData.status === 200) {
         state.show = true;
@@ -455,6 +490,72 @@ const appointmentSlice = createSlice({
       }
     },
     [getAppoinmentsLog.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      toast.error(payload.message);
+    },
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    [postBookAppointmentData.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [postBookAppointmentData.fulfilled]: (state, { payload }) => {
+      console.log("Payload me kya mila", payload);
+      const { data, message, status } = payload;
+
+      if (status === 200) {
+        state.bookPatient = null;
+        state.doctors = null;
+        state.cardsDetail = null;
+        state.timeSlot = null;
+        state.startTime = null;
+        state.statusLogData = null;
+        state.StatusId = null;
+
+        removeCardsDetailFromLocalStorage();
+        removeTimeSlotFromLocalStorage();
+        removeStartTimeFromLocalStorage();
+        removeStatusLogFromLocalStorage();
+        removeBookPatientsFromLocalStorage();
+        removeDoctorsFromLocalStorage();
+        toast.success(`${message}`);
+        state.isLoading = false;
+
+        if (status === 801) {
+          state.bookPatient = null;
+          state.doctors = null;
+          state.cardsDetail = null;
+          state.timeSlot = null;
+          state.startTime = null;
+          state.statusLogData = null;
+          state.StatusId = null;
+
+          removeCardsDetailFromLocalStorage();
+          removeTimeSlotFromLocalStorage();
+          removeStartTimeFromLocalStorage();
+          removeStatusLogFromLocalStorage();
+          removeBookPatientsFromLocalStorage();
+          removeDoctorsFromLocalStorage();
+        }
+      } else {
+        state.bookPatient = null;
+        state.doctors = null;
+        state.cardsDetail = null;
+        state.timeSlot = null;
+        state.startTime = null;
+        state.statusLogData = null;
+        state.StatusId = null;
+
+        removeCardsDetailFromLocalStorage();
+        removeTimeSlotFromLocalStorage();
+        removeStartTimeFromLocalStorage();
+        removeStatusLogFromLocalStorage();
+        removeBookPatientsFromLocalStorage();
+        removeDoctorsFromLocalStorage();
+        toast.error(`${message}`);
+        state.isLoading = false;
+      }
+    },
+    [postBookAppointmentData.rejected]: (state, { payload }) => {
       state.isLoading = false;
       toast.error(payload.message);
     },

@@ -10,9 +10,8 @@ import {
 } from "../../Redux/appointmentSlice";
 
 const AppointmentsTable = () => {
-  const { appointments, isLoading, showAppoint, getTotal } = useSelector(
-    (state) => state.appointmentsData
-  );
+  const { appointments, isLoading, showAppoint, getTotal,  } =
+    useSelector((state) => state.appointmentsData);
   const dispatch = useDispatch();
   const [page1, setPage] = useState(1);
   const [searchedText, setSearchedText] = useState("");

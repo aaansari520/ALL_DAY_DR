@@ -1,4 +1,4 @@
-import { DatePicker, Form, Modal, Radio, Select, Spin } from "antd";
+import { Button, DatePicker, Form, Modal, Radio, Select, Spin } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -9,22 +9,32 @@ import {
   getDoctors,
   getPatients,
   getTimeSlot,
+  postBookAppointmentData,
   removeDoctor,
   removePateint,
 } from "../../Redux/appointmentSlice";
 import moment from "moment";
 
 const BookAppointmentModal = () => {
-  const { showAppoint, bookPatient, startTime, doctors, isLoading, timeSlot } =
-    useSelector((store) => store.appointmentsData);
+  const {
+    showAppoint,
+    bookPatient,
+    startTime,
+    doctors,
+    isLoading,
+    timeSlot,
+    cardsDetail,
+  } = useSelector((store) => store.appointmentsData);
 
   const [searchedPatient, setSearchedPatient] = useState(null);
   const [searchedDoctor, setSearchedDoctor] = useState(null);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [docId, setDocId] = useState(null);
   const [show, setShow] = useState(false);
+  const [showCards, setShowCards] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [value, setValue] = useState(null);
+  const [valueRadio, setValueRadio] = useState(null);
 
   const dispatch = useDispatch();
   const formRef = React.createRef();
@@ -121,8 +131,9 @@ const BookAppointmentModal = () => {
 
   const onChangePayment = (e) => {
     console.log("radio checked for payment", e.target.value);
-    setValue(e.target.value);
+    setValueRadio(e.target.value);
     setShowButton(true);
+    setShowCards(true);
   };
 
   return (
@@ -147,18 +158,22 @@ const BookAppointmentModal = () => {
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 15 }}
           onFinish={(values) => {
-            // dispatch(addPatients(values));
-            console.log("Patient Data", values);
+            dispatch(
+              postBookAppointmentData({ values, value, selectedPatientId })
+            );
+            // console.log("Appointment Data values", values);
+            // console.log("Appointment Data value", value);
+            // console.log("Appointment Data valueRadio", valueRadio);
             formRef.current.resetFields();
             setTimeout(() => {
-              navigate("/table");
+              navigate("/appointmentsTable");
             }, 2000);
           }}
           ref={formRef}
           style={{ marginTop: "20px" }}
         >
           <Form.Item
-            name="patient"
+            name="patient_id"
             label="Patient Name"
             rules={[
               {
@@ -194,7 +209,7 @@ const BookAppointmentModal = () => {
 
           {selectedPatientId ? (
             <Form.Item
-              name="doctor"
+              name="doctor_id"
               label="Doctor Name"
               rules={[
                 {
@@ -251,7 +266,7 @@ const BookAppointmentModal = () => {
 
           {startTime ? (
             <Form.Item
-              name="time"
+              name="start_time"
               label="Time Slots"
               rules={[
                 {
@@ -329,7 +344,7 @@ const BookAppointmentModal = () => {
             <div className="ant-radio-groupLabel">
               <p>Payment Mode :</p>
               <div>
-                <Radio.Group name="appointment_type" onChange={onChangePayment}>
+                <Radio.Group name="appoint_type" onChange={onChangePayment}>
                   <Radio value={"payment_method_mode"}>Cards</Radio>
                 </Radio.Group>
               </div>
@@ -337,6 +352,40 @@ const BookAppointmentModal = () => {
           ) : (
             ""
           )}
+
+          {showCards && cardsDetail ? (
+            <Form.Item
+              name="cardIdentifier"
+              label="Select Card"
+              rules={[
+                {
+                  required: true,
+                  message: "This Field is Required!",
+                },
+              ]}
+            >
+              {cardsDetail && (
+                <Select filterOption={false}>
+                  {cardsDetail?.map((card) => {
+                    return (
+                      <Select.Option value={card.id} allowClear key={card.id}>
+                        <h5>{card.card_number}</h5>
+                        <span>{card.card_type}</span>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              )}
+            </Form.Item>
+          ) : (
+            ""
+          )}
+
+          <Form.Item className="form-btn">
+            <Button block type="primary" htmlType="submit">
+              Book Appointment
+            </Button>
+          </Form.Item>
         </Form>
       </div>
     </Modal>
